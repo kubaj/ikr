@@ -53,14 +53,24 @@ def get_speech_set(directory, shuff=False):
         filenames_l, labels_l = zip(*data)
 
     speeches = []
-    for speech in filenames_l:
+    labels = []
+    for speech, lbl in zip(filenames_l, labels_l):
         # Preprocessing here? (removing empty parts)
         sample_rate, data = wav.read(speech)
         data = data[(2*sample_rate):]   # cut off first 2 sec
-        speeches.append(mfcc(data, samplerate=sample_rate))
+
+        # generate mfcc
+        coefficients = mfcc(data, samplerate=sample_rate)
+
+        # create 26x13 maps of mfcc for convolution
+        mapheight = 26
+        for i in range(0, len(coefficients), mapheight):
+            if i+mapheight <= len(coefficients):
+                speeches.append(coefficients[i:i+mapheight])
+                labels.append(lbl)
 
     speeches = np.array(speeches)
-    labels = np.array(labels_l)
+    labels = np.array(labels)
 
     return speeches, labels
 
