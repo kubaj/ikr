@@ -4,7 +4,7 @@ from keras.datasets import mnist
 from keras import initializers
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
-from keras.layers.convolutional import Conv2D
+from keras.layers.convolutional import Conv2D, MaxPooling2D
 from keras import backend as K
 import ikrdata
 
@@ -12,7 +12,7 @@ batch_size = 32
 num_classes = 31
 epochs = 64
 maxlen = 2000
-modelfile = 'speechnet'
+modelfile = 'speechmap'
 
 (x_train, y_train), (x_test, y_test) = ikrdata.load_audio_data()
 
@@ -29,12 +29,13 @@ y_test = keras.utils.to_categorical(y_test, num_classes)
 
 model = Sequential()
 model.add(Conv2D(
-    6, (3, 6),
+    12, (3, 6),
     activation='relu',
     bias_initializer=initializers.constant(0.1),
     input_shape=(26, 13, 1),
 ))
 model.add(Flatten())
+model.add(Dense(512, activation='relu', bias_initializer=initializers.constant(0.1)))
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss=keras.losses.categorical_crossentropy,
