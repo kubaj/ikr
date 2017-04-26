@@ -2,7 +2,8 @@ import os, glob, io
 from PIL import Image
 import numpy as np
 from random import shuffle
-import scipy
+import scipy.io.wavfile as wav
+from python_speech_features import mfcc
 
 GLOB_FACES = '*.png'
 GLOB_SPEECH = '*.wav'
@@ -20,7 +21,7 @@ def get_filenames_extension(directory, extension):
 
 def get_image_set(directory, shuff=False):
     filenames_l, labels_l = get_filenames_extension(directory, GLOB_FACES)
-   
+
     if shuff:
         data = list(zip(filenames_l, labels_l))
         shuffle(data)
@@ -52,10 +53,11 @@ def get_speech_set(directory, shuff=False):
         filenames_l, labels_l = zip(*data)
 
     speeches = []
-    for speech in speeches:
+    for speech in filenames_l:
         # Preprocessing here? (removing empty parts)
-        sample_rate,data = scipy.io.wavfile.read(speech)
-        speeches.append(data)
+        sample_rate, data = wav.read(speech)
+        data = data[(2*sample_rate):]   # cut off first 2 sec
+        speeches.append(mfcc(data, samplerate=sample_rate))
 
     speeches = np.array(speeches)
     labels = np.array(labels_l)
@@ -63,7 +65,7 @@ def get_speech_set(directory, shuff=False):
     return speeches, labels
 
 def load_audio_data():
-    x_train, y_train = get_speech_set(TRAIN_DIR, shuff=True)
+    x_train, y_train = get_speech_set(TRAIN_DIR)
     x_test, y_test = get_speech_set(DEV_DIR)
 
     return (x_train, y_train),(x_test, y_test)
