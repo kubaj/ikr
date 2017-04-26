@@ -16,3 +16,9 @@ Test accuracy: 0.274193555117
 Conv2D - 32/2x2/relu > Conv2D - 64/2x2/relu > MaxPooling2D - 4x4 > DropOut 0.25 > Dense 256/relu > DropOut 0.5 > Final Dense
 Test loss: 3.68268998208
 Test accuracy: 0.30645161771
+
+Conv2D - 32/5x5/relu > Conv2D - 64/2x2/relu > MaxPooling2D - 3x3 > DropOut 0.25 > Dense 512/relu > DropOut 0.5 > Final Dense
+Test loss: 3.82708757154
+Test accuracy: 0.290322582087
+
+Conv2D - 32/8x8/relu > Conv2D - 64/2x2/relu > MaxPooling2D - 3x3 > DropOut 0.25 > Dense 256/relu > DropOut 0.5 > Final Dense

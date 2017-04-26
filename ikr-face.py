@@ -9,7 +9,7 @@ import ikrdata
 
 batch_size = 16
 num_classes = 31
-epochs = 32
+epochs = 128
 img_rows, img_cols = 80, 80
 
 (x_train, y_train), (x_test, y_test) = ikrdata.load_graphic_data()
@@ -37,12 +37,12 @@ y_train = keras.utils.to_categorical(y_train, num_classes)
 y_test = keras.utils.to_categorical(y_test, num_classes)
 
 model = Sequential()
-model.add(Conv2D(32, kernel_size=(8, 8),
+model.add(Conv2D(32, kernel_size=(2, 2),
                  activation='relu',
                  input_shape=input_shape))
-model.add(Conv2D(64, (6, 6), activation='relu'))
-model.add(MaxPooling2D(pool_size=(4, 4)))
-model.add(Dropout(0.25))
+model.add(Conv2D(64, (2, 2), activation='relu'))
+model.add(MaxPooling2D(pool_size=(3, 3)))
+model.add(Dropout(0.5))
 model.add(Flatten())
 model.add(Dense(256, activation='relu'))
 model.add(Dropout(0.5))

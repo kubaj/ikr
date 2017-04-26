@@ -53,10 +53,17 @@ def get_speech_set(directory, shuff=False):
 
     speeches = []
     for speech in speeches:
+        # Preprocessing here? (removing empty parts)
         sample_rate,data = scipy.io.wavfile.read(speech)
         speeches.append(data)
 
+    speeches = np.array(speeches)
     labels = np.array(labels_l)
 
+    return speeches, labels
+
 def load_audio_data():
-    pass
+    x_train, y_train = get_speech_set(TRAIN_DIR, shuff=True)
+    x_test, y_test = get_speech_set(DEV_DIR)
+
+    return (x_train, y_train),(x_test, y_test)
