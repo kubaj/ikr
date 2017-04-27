@@ -12,7 +12,7 @@ import ikrdata
 batch_size = 32
 num_classes = 31
 epochs = 64
-maxlen = 2000
+maxlen = 200
 modelfile = 'speechnet'
 
 (x_train, y_train), (x_test, y_test) = ikrdata.load_audio_data()
@@ -29,11 +29,13 @@ y_train = keras.utils.to_categorical(y_train, num_classes)
 y_test = keras.utils.to_categorical(y_test, num_classes)
 
 model = Sequential()
-model.add(LSTM(32, input_shape=(maxlen, 13), return_sequences=False))
+model.add(LSTM(64, input_shape=(maxlen, 13), return_sequences=False, 
+    activation='tanh', recurrent_dropout=0.5))
+model.add(Dense(128, activation='relu'))
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss=keras.losses.categorical_crossentropy,
-              optimizer=keras.optimizers.Adam(),
+              optimizer=keras.optimizers.Adadelta(),
               metrics=['accuracy'])
 
 model.fit(x_train, y_train,

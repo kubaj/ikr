@@ -3,6 +3,8 @@ from PIL import Image
 import numpy as np
 from random import shuffle
 import scipy.io.wavfile as wav
+from scipy.signal.filter_design import butter, buttord
+from scipy.signal import lfilter
 from python_speech_features import mfcc
 
 GLOB_FACES = '*.png'
@@ -44,6 +46,20 @@ def load_graphic_data():
 
     return (x_train, y_train),(x_test, y_test)
 
+def convert_hertz(freq):
+    # convert frequency in hz to units of pi rad/sample
+    # (our .WAV is sampled at 44.1KHz)
+    return freq * 2.0 / 44100.0
+
+def passband_filter(samplerate, samples):
+    pass_freq = convert_hertz(280.0)
+    stop_freq = convert_hertz(3500.0)
+    pass_gain = 3.0 # tolerable loss in passband (dB)
+    stop_gain = 60.0 # required attenuation in stopband (dB)
+    ord, wn = buttord(pass_freq, stop_freq, pass_gain, stop_gain)
+    b, a = butter(ord, wn, btype = 'low')
+    return lfilter(b, a, samples)
+
 def get_speech_set(directory, shuff=False):
     filenames_l, labels_l = get_filenames_extension(directory, GLOB_SPEECH)
 
@@ -56,8 +72,8 @@ def get_speech_set(directory, shuff=False):
     for speech in filenames_l:
         # Preprocessing here? (removing empty parts)
         sample_rate, data = wav.read(speech)
-        data = data[(2*sample_rate):]   # cut off first 2 sec
-        speeches.append(mfcc(data, samplerate=sample_rate))
+        data = passband_filter(sample_rate, data[(2*sample_rate):])   # cut off first 2 sec
+        speeches.append(mfcc(data, samplerate=sample_rate, winlen=0.5, winstep=0.2))
 
     speeches = np.array(speeches)
     labels = np.array(labels_l)
