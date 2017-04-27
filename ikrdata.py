@@ -44,7 +44,7 @@ def load_graphic_data():
 
     return (x_train, y_train),(x_test, y_test)
 
-def get_speech_set(directory, shuff=False):
+def get_speech_set(directory, shuff=False, pack=False):
     filenames_l, labels_l = get_filenames_extension(directory, GLOB_SPEECH)
 
     if shuff:
@@ -61,6 +61,9 @@ def get_speech_set(directory, shuff=False):
 
         winlen = 0.03
         winstep = 0.01
+        threshold = np.mean(np.abs(data[start_noise:start]))
+        data = data[start:]   # cut off first 2 sec
+        ndata = data#[data > (threshold*1.0)]
 
         # generate mfcc
         coefficients = psf.mfcc(data, samplerate=sample_rate, numcep=26, winlen=winlen, winstep=winstep)
@@ -68,15 +71,22 @@ def get_speech_set(directory, shuff=False):
 
         # create 26x13 maps of mfcc for convolution
         mapheight = 26
+        maps = []
         for i in range(0, len(coefficients), mapheight):
             if i+mapheight <= len(coefficients):
                 ceff = coefficients[i:i+mapheight]
                 ceff_f = coefficients_f[i:i+mapheight]
-                speeches.append(np.concatenate((ceff, ceff_f), axis=0))
+                mp = np.concatenate((ceff, ceff_f), axis=0)
+                if pack:
+                    maps.append(mp)
+                else:
+                    speeches.append(mp)
                 labels.append(lbl)
 
+        if pack: speeches.append(np.array(maps))
+
     speeches = np.array(speeches)
-    labels = np.array(labels)
+    labels = np.array(labels_l if pack else labels)
 
     return speeches, labels
 
