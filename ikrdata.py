@@ -3,7 +3,7 @@ from PIL import Image
 import numpy as np
 from random import shuffle
 import scipy.io.wavfile as wav
-from python_speech_features import mfcc
+import python_speech_features as psf
 
 GLOB_FACES = '*.png'
 GLOB_SPEECH = '*.wav'
@@ -59,14 +59,20 @@ def get_speech_set(directory, shuff=False):
         sample_rate, data = wav.read(speech)
         data = data[(2*sample_rate):]   # cut off first 2 sec
 
+        winlen = 0.03
+        winstep = 0.01
+
         # generate mfcc
-        coefficients = mfcc(data, samplerate=sample_rate, numcep=26, winlen=0.25, winstep=0.2)
+        coefficients = psf.mfcc(data, samplerate=sample_rate, numcep=26, winlen=winlen, winstep=winstep)
+        coefficients_f = psf.logfbank(data, samplerate=sample_rate, winlen=winlen, winstep=winstep)
 
         # create 26x13 maps of mfcc for convolution
         mapheight = 26
         for i in range(0, len(coefficients), mapheight):
             if i+mapheight <= len(coefficients):
-                speeches.append(coefficients[i:i+mapheight])
+                ceff = coefficients[i:i+mapheight]
+                ceff_f = coefficients_f[i:i+mapheight]
+                speeches.append(np.concatenate((ceff, ceff_f), axis=0))
                 labels.append(lbl)
 
     speeches = np.array(speeches)

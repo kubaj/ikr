@@ -4,13 +4,15 @@ from keras.datasets import mnist
 from keras import initializers
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
-from keras.layers.convolutional import Conv2D, MaxPooling2D
+from keras.layers.convolutional import Conv2D, MaxPooling2D, AveragePooling2D
+from keras.layers.local import LocallyConnected2D
+from keras.layers.normalization import BatchNormalization
 from keras import backend as K
 import ikrdata
 
 batch_size = 32
 num_classes = 31
-epochs = 64
+epochs = 16
 maxlen = 2000
 modelfile = 'speechmap'
 
@@ -20,21 +22,25 @@ print('x_train shape:', x_train.shape)
 print(x_train.shape[0], 'train samples')
 print(x_test.shape[0], 'test samples')
 
-x_train = x_train.reshape(x_train.shape[0], 26, 26, 1)
-x_test = x_test.reshape(x_test.shape[0], 26, 26, 1)
+x_train = x_train.reshape(x_train.shape[0], 26, 52, 1)
+x_test = x_test.reshape(x_test.shape[0], 26, 52, 1)
 
 # convert class vectors to binary class matrices
 y_train = keras.utils.to_categorical(y_train, num_classes)
 y_test = keras.utils.to_categorical(y_test, num_classes)
 
 model = Sequential()
-model.add(Conv2D(
-    24, (3, 6),
+# model.add(BatchNormalization())
+# model.add(Conv2D(
+#     24, (3, 6),
+#     activation='tanh',
+#     bias_initializer=initializers.constant(0.1)
+# ))
+model.add(LocallyConnected2D(
+    24, (4, 5),
     activation='tanh',
-    bias_initializer=initializers.constant(0.1),
-    input_shape=(26, 26, 1),
-))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+    input_shape=(26, 52, 1)))
+model.add(AveragePooling2D(pool_size=(2, 2)))
 model.add(Flatten())
 model.add(Dropout(0.25))
 model.add(Dense(512, activation='sigmoid', bias_initializer=initializers.constant(0.1)))
