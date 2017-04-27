@@ -60,7 +60,7 @@ def get_speech_set(directory, shuff=False):
         data = data[(2*sample_rate):]   # cut off first 2 sec
 
         # generate mfcc
-        coefficients = mfcc(data, samplerate=sample_rate)
+        coefficients = mfcc(data, samplerate=sample_rate, numcep=26, winlen=0.25, winstep=0.2)
 
         # create 26x13 maps of mfcc for convolution
         mapheight = 26
