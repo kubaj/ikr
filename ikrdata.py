@@ -3,6 +3,7 @@ from PIL import Image
 import numpy as np
 from random import shuffle
 import scipy.io.wavfile as wav
+import scipy.ndimage
 import python_speech_features as psf
 
 GLOB_FACES = '*.png'
@@ -30,7 +31,11 @@ def get_image_set(directory, shuff=False):
     images = []
     for img in filenames_l:
         image = Image.open(img).convert('L')
-        images.append(np.array(image))
+        image = np.array(image)
+        sx = scipy.ndimage.sobel(image, axis=0, mode='constant')
+        sy = scipy.ndimage.sobel(image, axis=1, mode='constant')
+        sob = np.hypot(sx, sy)
+        images.append(np.array([sob, image], np.int32))
 
     images = np.array(images)
     labels = np.array(labels_l)
@@ -61,9 +66,9 @@ def get_speech_set(directory, shuff=False, pack=False):
 
         winlen = 0.03
         winstep = 0.01
-        threshold = np.mean(np.abs(data[start_noise:start]))
-        data = data[start:]   # cut off first 2 sec
-        ndata = data#[data > (threshold*1.0)]
+        # threshold = np.mean(np.abs(data[start_noise:start]))
+        # data = data[start:]   # cut off first 2 sec
+        # ndata = data#[data > (threshold*1.0)]
 
         # generate mfcc
         coefficients = psf.mfcc(data, samplerate=sample_rate, numcep=26, winlen=winlen, winstep=winstep)

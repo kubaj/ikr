@@ -10,9 +10,9 @@ import ikrdata
 
 batch_size = 32
 num_classes = 31
-epochs = 64
+epochs = 128
 img_rows, img_cols = 80, 80
-input_channels = 1
+input_channels = 2
 modelfile = 'facenet'
 
 (x_train, y_train), (x_test, y_test) = ikrdata.load_graphic_data()
@@ -41,26 +41,25 @@ y_test = keras.utils.to_categorical(y_test, num_classes)
 
 model = Sequential()
 model.add(Conv2D(
-    4,
-    kernel_size=(14, 14),
+    32,
+    kernel_size=(6, 6),
     activation='relu',
     input_shape=input_shape,
-    bias_initializer=initializers.constant(0.1),
-    padding='same',
+    bias_initializer=initializers.RandomNormal(mean=0, stddev=0.1),
 ))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Conv2D(
-    8, (8, 8),
+    16, (3, 3),
     activation='relu',
-    bias_initializer=initializers.constant(0.1)
+    bias_initializer=initializers.RandomNormal(mean=0, stddev=0.01)
 ))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Dropout(0.25))
 model.add(Flatten())
 model.add(Dense(
-    256,
+    128,
     activation='relu',
-    bias_initializer=initializers.constant(0.1),
+    bias_initializer=initializers.RandomNormal(mean=0, stddev=0.001),
 ))
 model.add(Dropout(0.3))
 model.add(Dense(num_classes, activation='softmax'))

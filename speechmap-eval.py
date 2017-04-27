@@ -17,7 +17,7 @@ edata, elabel = ikrdata.get_speech_set(ikrdata.DEV_DIR, pack=True)
 for data, label in zip(edata, elabel):
     print()
     print(len(data), "maps, expected label:", label)
-    data = data.reshape(data.shape[0], 26, 26, 1)
+    data = data.reshape(data.shape[0], 26, 52, 1)
     pred = model.predict(data)
     print("Predicted labels: ", end='')
     prob = [0 for _ in range(31)]

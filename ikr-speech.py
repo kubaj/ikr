@@ -10,9 +10,9 @@ from keras.layers.normalization import BatchNormalization
 from keras import backend as K
 import ikrdata
 
-batch_size = 32
+batch_size = 16
 num_classes = 31
-epochs = 16
+epochs = 8
 maxlen = 2000
 modelfile = 'speechmap'
 
@@ -36,15 +36,13 @@ model = Sequential()
 #     activation='tanh',
 #     bias_initializer=initializers.constant(0.1)
 # ))
+model.add(BatchNormalization(input_shape=(26, 52, 1)))
 model.add(LocallyConnected2D(
-    24, (4, 5),
-    activation='tanh',
-    input_shape=(26, 52, 1)))
-model.add(AveragePooling2D(pool_size=(2, 2)))
+    24, (3, 3),
+    activation='tanh'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
-model.add(Dropout(0.25))
-model.add(Dense(512, activation='sigmoid', bias_initializer=initializers.constant(0.1)))
-model.add(Dropout(0.25))
+model.add(Dense(256, activation='sigmoid'))
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss=keras.losses.categorical_crossentropy,
