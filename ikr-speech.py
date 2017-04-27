@@ -5,12 +5,13 @@ from keras import initializers
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers.convolutional import Conv2D, MaxPooling2D
+from keras.layers.local import LocallyConnected2D
 from keras import backend as K
 import ikrdata
 
 batch_size = 32
 num_classes = 31
-epochs = 32
+epochs = 8
 maxlen = 2000
 modelfile = 'speechmap'
 
@@ -28,15 +29,17 @@ y_train = keras.utils.to_categorical(y_train, num_classes)
 y_test = keras.utils.to_categorical(y_test, num_classes)
 
 model = Sequential()
-model.add(Conv2D(
-    12, (3, 6),
-    activation='sigmoid',
+model.add(LocallyConnected2D(
+    24, (3, 6),
+    activation='tanh',
     bias_initializer=initializers.constant(0.1),
     input_shape=(26, 26, 1),
 ))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
+model.add(Dropout(0.25))
 model.add(Dense(512, activation='sigmoid', bias_initializer=initializers.constant(0.1)))
-model.add(Dropout(0.05))
+model.add(Dropout(0.25))
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss=keras.losses.categorical_crossentropy,
