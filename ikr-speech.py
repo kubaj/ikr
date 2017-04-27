@@ -10,7 +10,7 @@ import ikrdata
 
 batch_size = 32
 num_classes = 31
-epochs = 64
+epochs = 32
 maxlen = 2000
 modelfile = 'speechmap'
 
@@ -20,8 +20,8 @@ print('x_train shape:', x_train.shape)
 print(x_train.shape[0], 'train samples')
 print(x_test.shape[0], 'test samples')
 
-x_train = x_train.reshape(x_train.shape[0], 26, 13, 1)
-x_test = x_test.reshape(x_test.shape[0], 26, 13, 1)
+x_train = x_train.reshape(x_train.shape[0], 26, 26, 1)
+x_test = x_test.reshape(x_test.shape[0], 26, 26, 1)
 
 # convert class vectors to binary class matrices
 y_train = keras.utils.to_categorical(y_train, num_classes)
@@ -30,12 +30,13 @@ y_test = keras.utils.to_categorical(y_test, num_classes)
 model = Sequential()
 model.add(Conv2D(
     12, (3, 6),
-    activation='relu',
+    activation='sigmoid',
     bias_initializer=initializers.constant(0.1),
-    input_shape=(26, 13, 1),
+    input_shape=(26, 26, 1),
 ))
 model.add(Flatten())
-model.add(Dense(512, activation='relu', bias_initializer=initializers.constant(0.1)))
+model.add(Dense(512, activation='sigmoid', bias_initializer=initializers.constant(0.1)))
+model.add(Dropout(0.05))
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss=keras.losses.categorical_crossentropy,
