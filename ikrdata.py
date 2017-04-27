@@ -60,7 +60,7 @@ def passband_filter(samples):
     b, a = butter(ord, wn, btype='low')
     return lfilter(b, a, samples)
 
-def get_speech_set(directory, shuff=False):
+def get_speech_set(directory, shuff=False, pack=False):
     filenames_l, labels_l = get_filenames_extension(directory, GLOB_SPEECH)
 
     if shuff:
@@ -78,20 +78,26 @@ def get_speech_set(directory, shuff=False):
 
         threshold = np.mean(np.abs(data[start_noise:start]))
         data = data[start:]   # cut off first 2 sec
-        ndata = data[data > (threshold*1.0)]
+        ndata = data#[data > (threshold*1.0)]
 
         # generate mfcc
         coefficients = mfcc(ndata, samplerate=sample_rate, winlen=0.03, numcep=26)
 
         # create 26x13 maps of mfcc for convolution
         mapheight = 26
+        maps = []
         for i in range(0, len(coefficients), mapheight):
-            if i+mapheight <= len(coefficients):
-                speeches.append(coefficients[i:i+mapheight])
+            if i + mapheight <= len(coefficients):
+                if pack:
+                    maps.append(coefficients[i:i + mapheight])
+                else:
+                    speeches.append(coefficients[i:i + mapheight])
                 labels.append(lbl)
 
+        if pack: speeches.append(np.array(maps))
+
     speeches = np.array(speeches)
-    labels = np.array(labels)
+    labels = np.array(labels_l if pack else labels)
 
     return speeches, labels
 
