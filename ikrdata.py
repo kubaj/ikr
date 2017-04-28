@@ -20,6 +20,19 @@ def get_filenames_extension(directory, extension):
         filenames_l += filenames_new
     return filenames_l, labels_l
 
+def image_histogram_equalization(image, number_bins=256):
+    # from http://www.janeriksolem.net/2009/06/histogram-equalization-with-python-and.html
+
+    # get image histogram
+    image_histogram, bins = np.histogram(image.flatten(), number_bins, normed=True)
+    cdf = image_histogram.cumsum() # cumulative distribution function
+    cdf = 255 * cdf / cdf[-1] # normalize
+
+    # use linear interpolation of cdf to find new pixel values
+    image_equalized = np.interp(image.flatten(), bins[:-1], cdf)
+
+    return image_equalized.reshape(image.shape), cdf
+
 def get_image_set(directory, shuff=False):
     filenames_l, labels_l = get_filenames_extension(directory, GLOB_FACES)
 
@@ -31,11 +44,13 @@ def get_image_set(directory, shuff=False):
     images = []
     for img in filenames_l:
         image = Image.open(img).convert('L')
-        image = np.array(image)
+        image = np.array(image, np.float32)
+        image, _ = image_histogram_equalization(image)
+        #median = scipy.ndimage.median_filter(image, size=3)
         sx = scipy.ndimage.sobel(image, axis=0, mode='constant')
         sy = scipy.ndimage.sobel(image, axis=1, mode='constant')
         sob = np.hypot(sx, sy)
-        images.append(np.array([sob, image], np.int32))
+        images.append(np.array([sob, image, np.zeros(image.shape)]))
 
     images = np.array(images)
     labels = np.array(labels_l)
