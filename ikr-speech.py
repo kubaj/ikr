@@ -1,19 +1,15 @@
-from __future__ import print_function
 import keras
-from keras.datasets import mnist
-from keras.preprocessing.sequence import pad_sequences
+from keras import initializers
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
-from keras.layers.recurrent import LSTM
-from keras.layers.wrappers import TimeDistributed
+from keras.layers.normalization import BatchNormalization
 from keras import backend as K
 import ikrdata
 
-batch_size = 32
+batch_size = 600
 num_classes = 31
-epochs = 64
-maxlen = 2000
-modelfile = 'speechnet'
+epochs = 32
+modelfile = 'speechmap'
 
 (x_train, y_train), (x_test, y_test) = ikrdata.load_audio_data()
 
@@ -21,15 +17,16 @@ print('x_train shape:', x_train.shape)
 print(x_train.shape[0], 'train samples')
 print(x_test.shape[0], 'test samples')
 
-x_train = pad_sequences(x_train, maxlen=maxlen, dtype='float32')
-x_test = pad_sequences(x_test, maxlen=maxlen, dtype='float32')
-
 # convert class vectors to binary class matrices
 y_train = keras.utils.to_categorical(y_train, num_classes)
 y_test = keras.utils.to_categorical(y_test, num_classes)
 
 model = Sequential()
-model.add(LSTM(32, input_shape=(maxlen, 13), return_sequences=False))
+
+model.add(BatchNormalization(input_shape=(15, 46)))
+model.add(Flatten())
+model.add(Dense(512, activation='relu'))
+model.add(Dense(256, activation='relu'))
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss=keras.losses.categorical_crossentropy,
