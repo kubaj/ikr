@@ -1,0 +1,5 @@
+python_speech_features==0.5
+scipy==0.19.0
+numpy==1.12.1
+Keras==2.0.3
+Pillow==4.1.1

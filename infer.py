@@ -2,7 +2,7 @@ import argparse
 import glob
 import numpy as np
 from keras.models import load_model
-import ikrdata
+import ikr-data
 
 CLASSES = 31
 
