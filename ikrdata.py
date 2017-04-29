@@ -1,5 +1,5 @@
 import os, glob, io
-from PIL import Image
+from PIL import Image, ImageFilter
 import numpy as np
 from random import shuffle
 import scipy.io.wavfile as wav
@@ -11,6 +11,8 @@ GLOB_SPEECH = '*.wav'
 BASE_DIR = 'data/'
 TRAIN_DIR = BASE_DIR + 'train/'
 DEV_DIR = BASE_DIR + 'dev/'
+
+avgface = np.array(Image.open('data/avgface.png').crop((10,10,70,70)))
 
 def get_filenames_extension(directory, extension):
     filenames_l, labels_l = [], []
@@ -30,12 +32,14 @@ def get_image_set(directory, shuff=False):
 
     images = []
     for img in filenames_l:
-        image = Image.open(img).convert('L')
-        image = np.array(image)
+        pilimage = Image.open(img).convert('L').crop((10, 10, 70, 70))
+        image = np.array(pilimage)
+        edges = np.array(pilimage.filter(ImageFilter.FIND_EDGES))
         sx = scipy.ndimage.sobel(image, axis=0, mode='constant')
         sy = scipy.ndimage.sobel(image, axis=1, mode='constant')
         sob = np.hypot(sx, sy)
-        images.append(np.array([sob, image], np.int32))
+        delta_image = np.clip(image - avgface, 0, 255)
+        images.append(np.array([sob, delta_image, image], np.int32))
 
     images = np.array(images)
     labels = np.array(labels_l)
@@ -64,28 +68,26 @@ def get_speech_set(directory, shuff=False, pack=False):
         sample_rate, data = wav.read(speech)
         data = data[(2*sample_rate):]   # cut off first 2 sec
 
-        winlen = 0.03
+        winlen = 0.0256
         winstep = 0.01
         # threshold = np.mean(np.abs(data[start_noise:start]))
         # data = data[start:]   # cut off first 2 sec
         # ndata = data#[data > (threshold*1.0)]
 
         # generate mfcc
-        coefficients = psf.mfcc(data, samplerate=sample_rate, numcep=26, winlen=winlen, winstep=winstep)
+        coefficients = psf.mfcc(data, samplerate=sample_rate, numcep=20, winlen=winlen, winstep=winstep)
         coefficients_f = psf.logfbank(data, samplerate=sample_rate, winlen=winlen, winstep=winstep)
-
         # create 26x13 maps of mfcc for convolution
-        mapheight = 26
+        mapheight = 15
         maps = []
         for i in range(0, len(coefficients), mapheight):
             if i+mapheight <= len(coefficients):
                 ceff = coefficients[i:i+mapheight]
                 ceff_f = coefficients_f[i:i+mapheight]
-                mp = np.concatenate((ceff, ceff_f), axis=0)
                 if pack:
-                    maps.append(mp)
+                    maps.append(np.concatenate([ceff,ceff_f], axis=1))
                 else:
-                    speeches.append(mp)
+                    speeches.append(np.concatenate([ceff,ceff_f], axis=1))
                 labels.append(lbl)
 
         if pack: speeches.append(np.array(maps))

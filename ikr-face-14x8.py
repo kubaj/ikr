@@ -4,15 +4,15 @@ from keras.datasets import mnist
 from keras import initializers, regularizers
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
-from keras.layers import Conv2D, MaxPooling2D, BatchNormalization, AveragePooling2D
+from keras.layers import Conv2D, MaxPooling2D, BatchNormalization, LocallyConnected2D
 from keras import backend as K
 import ikrdata
 
 batch_size = 32
 num_classes = 31
-epochs = 128
-img_rows, img_cols = 80, 80
-input_channels = 2
+epochs = 200
+img_rows, img_cols = 60, 60
+input_channels = 3
 modelfile = 'facenet'
 
 (x_train, y_train), (x_test, y_test) = ikrdata.load_graphic_data()
@@ -42,26 +42,24 @@ y_test = keras.utils.to_categorical(y_test, num_classes)
 model = Sequential()
 model.add(Conv2D(
     32,
-    kernel_size=(6, 6),
+    kernel_size=(4, 4),
     activation='relu',
     input_shape=input_shape,
-    bias_initializer=initializers.RandomNormal(mean=0, stddev=0.1),
+    bias_initializer=initializers.Constant(0.1),
 ))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(MaxPooling2D(pool_size=(3, 3)))
 model.add(Conv2D(
-    16, (3, 3),
+    64, (2, 2),
     activation='relu',
-    bias_initializer=initializers.RandomNormal(mean=0, stddev=0.01)
-))
+    bias_initializer=initializers.Constant(0.1)))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Dropout(0.25))
 model.add(Flatten())
 model.add(Dense(
-    128,
+    256,
     activation='relu',
-    bias_initializer=initializers.RandomNormal(mean=0, stddev=0.001),
-))
-model.add(Dropout(0.3))
+    bias_initializer=initializers.Constant(0.1)))
+model.add(Dropout(0.25))
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss=keras.losses.categorical_crossentropy,
