@@ -28,6 +28,7 @@ parser.add_argument('--model-speech', type=str, help='h5 model for speech net', 
 parser.add_argument('--model-face', type=str, help='h5 model for face net', dest='face')
 parser.add_argument('-o', '--output', type=str, help='output file', dest='out')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='print detailed outputs on stdout')
+parser.add_argument('-s', '--sum', type=bool, dest='sum', help='summing results from models instead product')
 args = parser.parse_args()
 
 # Load models
@@ -75,7 +76,16 @@ for file in get_inputs(args.evaldir):
         if args.verbose:
             print('Speechnet:\n', speechnet_result)
 
-    result = facenet_result*speechnet_result
+    if args.sum:
+        if model_face and model_speech:
+            result = facenet_result*0.45 + speechnet_result*0.55
+        elif model_face:
+            result = facenet_result
+        else:
+            result = speechnet_result
+    else:
+        result = facenet_result*speechnet_result
+
     hard = np.argmax(result) + 1
 
     if args.verbose:

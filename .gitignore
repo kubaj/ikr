@@ -2,6 +2,7 @@
 .vscode/
 data
 data/
+eval/
 venv/
 
 .DS_Store
