@@ -4,7 +4,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers.normalization import BatchNormalization
 from keras import backend as K
-import ikr-data
+import ikrdata
 
 batch_size = 600
 num_classes = 31

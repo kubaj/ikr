@@ -8,7 +8,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 from keras import backend as K
-import ikr-data
+import ikrdata
 
 K.set_image_data_format('channels_first')
 batch_size = 64
